@@ -129,6 +129,13 @@ test_dedup <- test %>%
     aast_lung_grade = as.factor(aast_lung_grade) |>
       fct_relabel(~ paste0("AAST lung grade: ", .x))
   )
+#+ 2.3: Split Semicolon-Delimited Vascular Injury Column
+test_dedup <- test_dedup %>%
+  mutate(
+    chest_vascular_injury    = str_trim(str_extract(vascular_injury_procedure, "^[^;]+")),
+    chest_vascular_procedure = str_trim(str_extract(vascular_injury_procedure, "(?<=;).*$"))
+  ) %>%
+  select(-vascular_injury_procedure)
 #* 3: Descriptive Analysis
 #+ 3.1: Run TernG
 descriptive_norm <- ternG(
@@ -175,4 +182,5 @@ n_vats     <- sum(test_dedup$had_a_vats_thor_despite == "Y", na.rm = TRUE)
 cat("\n─── Outcome Rates (test_dedup) ───\n")
 cat(sprintf("Failed Thoracic Irrigation : %d / %d (%.1f%%)\n", n_failed, n_pts, n_failed / n_pts * 100))
 cat(sprintf("Had VATS Despite TI        : %d / %d (%.1f%%)\n", n_vats,   n_pts, n_vats   / n_pts * 100))
+
 
