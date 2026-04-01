@@ -1,0 +1,34 @@
+Type: Project
+Title: TI-LPI-2026
+Authors@R: person("Joshua", "Preston", email = "joshua.preston@emory.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-9834-3017"))
+Description: Epidemiologic analysis of thoracic irrigation (TI) in patients with lung parenchymal injury (LPI) at Grady Memorial Hospital. Evaluates patient characteristics, injury severity, and outcomes following bedside pleural lavage.
+URL: https://github.com/jdpreston30/TI-LPI-2026
+Depends:
+    R (>= 4.5.0)
+Imports:
+    dplyr,
+    tidyr,
+    tibble,
+    readr,
+    purrr,
+    ggplot2,
+    here,
+    yaml,
+    stringr,
+    forcats,
+    readxl,
+    janitor,
+    openxlsx,
+    colorspace,
+    cowplot,
+    scales,
+    ragg,
+    remotes,
+    jsonlite,
+    xml2,
+    TernTables
+Remotes:
+    jdpreston30/TernTables
+SystemRequirements:
+    TinyTeX (LaTeX distribution) - automatically installed via tinytex::install_tinytex() if not present
+Encoding: UTF-8
