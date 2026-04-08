@@ -20,6 +20,9 @@
 #'   ems_to_vessel_procedure_or_dx_calc (numeric, minutes; NA when absent),
 #'   chest_vascular_injury (character; NA for non-vascular patients).
 #' @param for_slides Logical. If TRUE, uses larger text and thicker axes (default: FALSE).
+#' @param version Integer controlling sequential reveal layers (default: 2).
+#'   0 = gray dots + median only (legend present, cover w/ white in PPT);
+#'   1 = + colored diamonds; 2 = full plot (+ colored TI dots + dashed connections).
 #' @param base_family Font family (default: "Arial").
 #' @param dot_color_main Color for non-vascular patient dots (default: "#aaaaaa").
 #' @param vasc_colors Named character vector mapping injury type to color.
@@ -29,6 +32,7 @@
 #' @return A ggplot object
 plot_timing_vascular <- function(data,
                                  for_slides     = FALSE,
+                                 version        = 2,
                                  base_family    = "Arial",
                                  dot_color_main = "#aaaaaa",
                                  vasc_colors    = NULL,
@@ -105,14 +109,14 @@ plot_timing_vascular <- function(data,
       ggplot2::aes(x = ti_hr, y = y_jit),
       color = dot_color_main, size = pt_main, alpha = 0.55, shape = 16
     ) +
-    #_ Vascular patients: TI dot
+    #_ Vascular patients: TI dot (alpha=0 in v0/v1 to anchor legend without showing dots)
     ggplot2::geom_point(
       data = df_vasc,
       ggplot2::aes(x = ti_hr, y = y_jit, color = chest_vascular_injury),
-      size = pt_vasc, alpha = 0.92, shape = 16
+      size = pt_vasc, alpha = if (version >= 2) 0.92 else 0, shape = 16
     ) +
-    #_ Segments: TI dot → vessel procedure/dx diamond
-    ggplot2::geom_segment(
+    #_ Segments: TI dot → vessel procedure/dx diamond (v2 only)
+    (if (version >= 2) ggplot2::geom_segment(
       data = df_segs,
       ggplot2::aes(
         x = ti_hr, xend = vasc_hr,
@@ -120,13 +124,13 @@ plot_timing_vascular <- function(data,
         color = chest_vascular_injury
       ),
       linetype = "dashed", linewidth = 0.45, alpha = 0.65
-    ) +
-    #_ Vessel procedure/dx: diamond at y = 0.65
-    ggplot2::geom_point(
+    ) else NULL) +
+    #_ Vessel procedure/dx: diamond at y = 0.65 (v1+)
+    (if (version >= 1) ggplot2::geom_point(
       data = df_segs,
       ggplot2::aes(x = vasc_hr, y = 0.65, color = chest_vascular_injury),
       size = pt_diam, alpha = 0.92, shape = 18
-    ) +
+    ) else NULL) +
     #- Scales
     ggplot2::scale_x_continuous(
       trans   = "log10",
