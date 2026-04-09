@@ -116,21 +116,21 @@ plot_timing_vascular <- function(data,
       size = pt_vasc, alpha = if (version >= 2) 0.92 else 0, shape = 16
     ) +
     #_ Segments: TI dot → vessel procedure/dx diamond (v2 only)
-    (if (version >= 2) ggplot2::geom_segment(
+    ggplot2::geom_segment(
       data = df_segs,
       ggplot2::aes(
         x = ti_hr, xend = vasc_hr,
         y = y_jit, yend = 0.65,
         color = chest_vascular_injury
       ),
-      linetype = "dashed", linewidth = 0.45, alpha = 0.65
-    ) else NULL) +
-    #_ Vessel procedure/dx: diamond at y = 0.65 (v1+)
-    (if (version >= 1) ggplot2::geom_point(
+      linetype = "dashed", linewidth = 0.45, alpha = if (version >= 2) 0.65 else 0
+    ) +
+    #_ Vessel procedure/dx: diamond at y = 0.65 (always present to anchor x range)
+    ggplot2::geom_point(
       data = df_segs,
       ggplot2::aes(x = vasc_hr, y = 0.65, color = chest_vascular_injury),
-      size = pt_diam, alpha = 0.92, shape = 18
-    ) else NULL) +
+      size = pt_diam, alpha = if (version >= 1) 0.92 else 0, shape = 18
+    ) +
     #- Scales
     ggplot2::scale_x_continuous(
       trans   = "log10",
@@ -155,7 +155,7 @@ plot_timing_vascular <- function(data,
     ggplot2::annotate(
       "text", x = median_ti_hr, y = 0.85,
       label = median_label,
-      hjust = -0.1, size = sz_label + 0.2,
+      hjust = -0.1, size = sz_label + 1.5,
       color = "#444444", fontface = "bold", family = base_family
     ) +
     ggplot2::labs() +
