@@ -142,6 +142,9 @@ plot_timing_vascular <- function(data,
       values = vasc_colors,
       name   = "Chest Vascular Injury"
     ) +
+    ggplot2::guides(
+      color = ggplot2::guide_legend(override.aes = list(shape = 18, size = pt_diam))
+    ) +
     ggplot2::scale_y_continuous(
       limits = c(-0.65, 1.0),
       breaks = NULL

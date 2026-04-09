@@ -54,9 +54,9 @@ plot_volume_comparison <- function(data,
     filter(!is.na(volume_ml)) %>%
     mutate(group = factor(group, levels = c("HTX Volume", "Irrigation Volume")))
 
-  means <- plot_data %>%
+  medians <- plot_data %>%
     group_by(group) %>%
-    summarise(mean_val = mean(volume_ml, na.rm = TRUE), .groups = "drop")
+    summarise(median_val = median(volume_ml, na.rm = TRUE), .groups = "drop")
 
   # Fixed y-axis: ticks every 1000 from 0 to 6000
   y_breaks <- seq(0, 6000, by = 1000)
@@ -88,8 +88,8 @@ plot_volume_comparison <- function(data,
 
   ggplot() +
     geom_col(
-      data = means,
-      aes(x = group, y = mean_val, fill = group, color = group),
+      data = medians,
+      aes(x = group, y = median_val, fill = group, color = group),
       width = 0.7, linewidth = lw_bar, alpha = 0.8
     ) +
     geom_jitter(

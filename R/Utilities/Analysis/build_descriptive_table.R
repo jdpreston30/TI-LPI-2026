@@ -39,6 +39,7 @@ build_descriptive_table <- function(descriptive_norm,
       # Pull out the level number for AIS chest and AAST lung
       str_detect(Variable, "^ais_chest:") ~ str_replace(Variable, "^ais_chest:\\s*", ""),
       str_detect(Variable, "^aast_lung_grade:") ~ str_replace(Variable, "^aast_lung_grade:\\s*", ""),
+      str_detect(Variable, "^location_of_irrigation:") ~ str_replace(Variable, "^location_of_irrigation:\\s*", ""),
       TRUE ~ Variable
     ))
   # Convenience pickers for each section
@@ -60,6 +61,15 @@ build_descriptive_table <- function(descriptive_norm,
       "Total Hemothorax Volume (cc)",
       "Irrigation Volume (cc)"
     ))
+  loc_rows <- labeled %>%
+    filter(str_detect(Variable, "^[A-Z]") &
+             Variable %in% setdiff(unique(labeled$Variable),
+               c("Age", "Sex (Male)", "Injury Severity Score", "Penetrating Mechanism",
+                 "Lung Contusion", "Lung Laceration", "Intraparenchymal Hemorrhage",
+                 "AIS chest: 3", "AIS chest: 4", "AIS chest: 5",
+                 "AAST lung grade: 2", "AAST lung grade: 3", "AAST lung grade: 4",
+                 "Injury to Irrigation Time (min)*", "Total Hemothorax Volume (cc)",
+                 "Irrigation Volume (cc)")))
   # Optional topline counts (only added if provided)
   toplines <- bind_rows(
     if (!is.null(n_total)) tibble(Variable = "Total Patients", Total = as.character(n_total)) else NULL,
@@ -79,7 +89,9 @@ build_descriptive_table <- function(descriptive_norm,
     .section("AAST Organ Injury Scale (Lung)"),
     aast_rows,
     .section("Thoracic Irrigation Features"),
-    irr_rows
+    irr_rows,
+    .section("Location of Irrigation"),
+    loc_rows
   ) %>%
     # Ensure missing totals for headers are empty strings (not NA)
     mutate(Total = replace_na(Total, ""))

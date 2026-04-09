@@ -65,7 +65,7 @@ raw_pared <- raw %>%
   filter(number != 46) %>%
   filter(!str_detect(diagnosis, regex("(?<!hemo)pneumothorax", ignore_case = TRUE))) %>%
   #! Patients who had two entries for bilateral, keeping one
-  select(number:los_days, sbp, hr, ems_to_ti_calc, ems_to_vessel_procedure_or_dx_calc, vascular_injury_procedure, operation, iss, failed_thoracic_irrigation, had_a_vats_despite, side_of_irrigation, chest_tube_size, total_htx_volume, irrigation_volume, total_evacuated, blood_evacuated, major_chest_vascular_injury, iph, pulm_contusion, pulmonary_laceration, active_bleeding)
+  select(number:los_days, sbp, hr, ems_to_ti_calc, ems_to_vessel_procedure_or_dx_calc, vascular_injury_procedure, operation, iss, failed_thoracic_irrigation, had_a_vats_despite, side_of_irrigation, location_of_irrigation, chest_tube_size, total_htx_volume, irrigation_volume, total_evacuated, blood_evacuated, major_chest_vascular_injury, iph, pulm_contusion, pulmonary_laceration, active_bleeding)
 #* 2: Data Preparation
 #+ 2.1: Structure Variables
 test <- raw_pared %>%
@@ -105,7 +105,11 @@ test <- raw_pared %>%
     ),
     as.factor
   )) %>%
-  select(number, active_bleeding, age, sex, iss, mechanism, pulm_contusion, pulmonary_laceration, iph, ais_chest, aast_lung_grade, ems_to_ti_calc, ems_to_vessel_procedure_or_dx_calc, vascular_injury_procedure, total_htx_volume, irrigation_volume, failed_thoracic_irrigation, had_a_vats_thor_despite)
+  mutate(
+    location_of_irrigation = stringr::str_to_title(location_of_irrigation),
+    location_of_irrigation = factor(location_of_irrigation)
+  ) %>%
+  select(number, active_bleeding, age, sex, iss, mechanism, pulm_contusion, pulmonary_laceration, iph, ais_chest, aast_lung_grade, location_of_irrigation, ems_to_ti_calc, ems_to_vessel_procedure_or_dx_calc, vascular_injury_procedure, total_htx_volume, irrigation_volume, failed_thoracic_irrigation, had_a_vats_thor_despite)
   # filter(is.na(major_chest_vascular_injury)) %>%
   print(test, n = Inf)
 #+ 2.2: Deduplicate Bilateral Records
@@ -119,7 +123,7 @@ test_dedup <- test %>%
   # (optional) choose which row to keep as the "first"
   arrange(patient_id, number) %>% # or arrange(patient_id, desc(total_htx_volume)), etc.
   group_by(patient_id) %>%
-  mutate(across(all_of(c("age", "sex", "iss", "mechanism", "ais_chest", "ems_to_ti_calc", "failed_thoracic_irrigation", "had_a_vats_thor_despite")), ~ replace(.x, dplyr::row_number() > 1, NA))) %>%
+  mutate(across(all_of(c("age", "sex", "iss", "mechanism", "ais_chest", "location_of_irrigation", "ems_to_ti_calc", "failed_thoracic_irrigation", "had_a_vats_thor_despite")), ~ replace(.x, dplyr::row_number() > 1, NA))) %>%
   ungroup() %>%
   select(-patient_id, -number) %>%
   mutate(
@@ -182,5 +186,9 @@ n_vats     <- sum(test_dedup$had_a_vats_thor_despite == "Y", na.rm = TRUE)
 cat("\n─── Outcome Rates (test_dedup) ───\n")
 cat(sprintf("Failed Thoracic Irrigation : %d / %d (%.1f%%)\n", n_failed, n_pts, n_failed / n_pts * 100))
 cat(sprintf("Had VATS Despite TI        : %d / %d (%.1f%%)\n", n_vats,   n_pts, n_vats   / n_pts * 100))
+#+ 4.2: Median volumes — overall cohort
+cat("\n─── Median Volumes (test_dedup, all patients) ───\n")
+cat(sprintf("Median HTX Volume       : %.0f cc\n", median(test_dedup$total_htx_volume,  na.rm = TRUE)))
+cat(sprintf("Median Irrigation Volume: %.0f cc\n", median(test_dedup$irrigation_volume, na.rm = TRUE)))
 
 
